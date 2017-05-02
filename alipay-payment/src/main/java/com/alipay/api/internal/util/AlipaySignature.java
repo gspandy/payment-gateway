@@ -98,7 +98,6 @@ public class AlipaySignature {
 
             return rsaSign(content, privateKey, charset);
         } else if (AlipayConstants.SIGN_TYPE_RSA2.equals(signType)) {
-
             return rsa256Sign(content, privateKey, charset);
         } else {
 
