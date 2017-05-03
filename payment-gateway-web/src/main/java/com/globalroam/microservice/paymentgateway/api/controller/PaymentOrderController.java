@@ -7,7 +7,6 @@ import com.alipay.api.domain.AlipayTradeWapPayModel;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.globalroam.microservice.paymentgateway.entity.EntityResponse;
 import com.globalroam.microservice.paymentgateway.entity.PaymentOrder;
-import com.globalroam.microservice.paymentgateway.enums.PayType;
 import com.globalroam.microservice.paymentgateway.exception.DataNotFoundException;
 import com.globalroam.microservice.paymentgateway.exception.InvalidRequestException;
 import com.globalroam.microservice.paymentgateway.exception.ServiceException;
@@ -29,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -90,8 +90,8 @@ public class PaymentOrderController {
 
     @RequestMapping(value = "/{id}/gateway", method = RequestMethod.GET)
     @ApiOperation(notes = "执行订单支付", httpMethod = "GET", value = "创建支付单")
-    public void gateway(@PathVariable String id, @RequestParam String type, HttpServletRequest request, HttpServletResponse response) {
-
+    public ModelAndView gateway(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) {
+        ModelAndView modelAndView = new ModelAndView();
         try {
             PaymentOrder paymentOrder = paymentOrderService.getById(id);
 
@@ -102,35 +102,36 @@ public class PaymentOrderController {
             paymentOrder.setStatus(PaymentOrder.STATUS_PAY);
             paymentOrderService.update(paymentOrder);
 
-            PayType payType = PayType.valueOf(type);
 
             switch (paymentOrder.getMethod()) {
-              //  case PaymentOrder.METHOD_ALI:
-              //      doAlipayPayment(paymentOrder, payType, request, response);
-              //      break;
-             //   case PaymentOrder.METHOD_WECHAT:
-                    //doWechatPayment(paymentOrder, payType, request, response);
-              //      break;
+                case PaymentOrder.METHOD_ALIPAY_H5:
+                    modelAndView.setViewName(alipayH5(paymentOrder, request, response));
+                    return modelAndView;
+                case PaymentOrder.METHOD_WECHAT_OPEN_H5:
+                    modelAndView.setViewName(wechatOpenH5(paymentOrder, request, response));
+                    return modelAndView;
                 default:
-                    doAlipayPayment(paymentOrder, payType, request, response);
-                    break;
+                    modelAndView.setViewName(alipayH5(paymentOrder, request, response));
+                    return modelAndView;
             }
         } catch (Exception e) {
             request.setAttribute("error", "调用支付接口失败");
+            modelAndView.setViewName("error");
+            return modelAndView;
         }
 
     }
 
 
-    private void wechatH5(PaymentOrder paymentOrder,  HttpServletRequest request, HttpServletResponse response) {
-
+    private String wechatH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) {
+        return null;
     }
 
-    private void qrCode(PaymentOrder paymentOrder,HttpServletRequest request, HttpServletResponse response) {
-
+    private String qrCode(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) {
+        return null;
     }
 
-    private void openH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private String wechatOpenH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         WechatUserAuth wechatUserAuth = (WechatUserAuth) request.getSession().getAttribute(WechatPaymentConfig.WECHAT_USER_AUTH_SESSION_KEY);
 
@@ -163,9 +164,10 @@ public class PaymentOrderController {
 
         request.getRequestDispatcher("classpath:/templates/wechat-open-h5.ftl").forward(request, response);
 
+        return null;
     }
 
-    public void doAlipayPayment(PaymentOrder paymentOrder, PayType payType, HttpServletRequest request, HttpServletResponse response) throws IOException, AlipayApiException {
+    public String alipayH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) throws IOException, AlipayApiException {
 
         AlipayClient client = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.SIGNTYPE);
         AlipayTradeWapPayRequest alipay_request = new AlipayTradeWapPayRequest();
@@ -193,6 +195,8 @@ public class PaymentOrderController {
         response.getWriter().write(form);//直接将完整的表单html输出到页面
         response.getWriter().flush();
         response.getWriter().close();
+
+        return null;
     }
 
 

@@ -79,16 +79,15 @@ public class PaymentOrder extends CommonEntity {
     public static String STATUS_FAIL = "FAIL";
 
     //支付方式 -- 支付宝支付H5
-    public static final String ALIPAY_H5 = "ALIPAY_H5";
-
+    public static final String METHOD_ALIPAY_H5 = "ALIPAY_H5";
     //支付方式 -- 支付宝支付二维码
-    public static final String ALIPAY_QRCODE = "ALIPAY_QRCODE";
+    public static final String METHOD_ALIPAY_QRCODE = "ALIPAY_QRCODE";
     //支付方式 -- 微信H5
-    public static final String WECHAT_H5 = "WECHAT_H5";
+    public static final String METHOD_WECHAT_H5 = "WECHAT_H5";
     //支付方式 -- 微信二维码
-    public static final String WECHAT_QRCODE = "WECHAT_QRCODE";
+    public static final String METHOD_WECHAT_QRCODE = "WECHAT_QRCODE";
     //支付方式 -- 微信公众号H5
-    public static final String WECHAT_OPEN_H5 = "WECHAT_OPEN_H5";
+    public static final String METHOD_WECHAT_OPEN_H5 = "WECHAT_OPEN_H5";
 
     public String getTradeNo() {
         return tradeNo;
@@ -99,7 +98,7 @@ public class PaymentOrder extends CommonEntity {
     }
 
     public static boolean isValidMethod(String method) {
-        return ALIPAY_H5.equalsIgnoreCase(method) || ALIPAY_QRCODE.equalsIgnoreCase(method) || WECHAT_H5.equalsIgnoreCase(method) || WECHAT_QRCODE.equalsIgnoreCase(method) || WECHAT_OPEN_H5.equalsIgnoreCase(method);
+        return METHOD_ALIPAY_H5.equalsIgnoreCase(method) || METHOD_ALIPAY_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_H5.equalsIgnoreCase(method) || METHOD_WECHAT_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_OPEN_H5.equalsIgnoreCase(method);
     }
 
 }

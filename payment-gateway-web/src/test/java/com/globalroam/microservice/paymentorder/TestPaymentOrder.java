@@ -10,7 +10,7 @@ public class TestPaymentOrder {
     @Test
     public void testValidMethod() {
 
-        System.out.println(PaymentOrder.isValidMethod(PaymentOrder.METHOD_ALI));
+        System.out.println(PaymentOrder.isValidMethod(PaymentOrder.METHOD_ALIPAY_H5));
 
     }
 }
