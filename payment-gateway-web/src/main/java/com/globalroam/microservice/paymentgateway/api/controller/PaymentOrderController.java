@@ -5,6 +5,7 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.domain.AlipayTradeWapPayModel;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
+import com.globalroam.microservice.paymentgateway.cofig.GlobalConfigure;
 import com.globalroam.microservice.paymentgateway.entity.EntityResponse;
 import com.globalroam.microservice.paymentgateway.entity.PaymentOrder;
 import com.globalroam.microservice.paymentgateway.exception.DataNotFoundException;
@@ -138,6 +139,7 @@ public class PaymentOrderController {
         if (wechatUserAuth == null) {
             String authUrl = HttpUtil.serviceBasePath(request) + WechatPaymentConfig.AUTH_URI;
             logger.debug("wechat open auth info is null, redirect to auth url :" + authUrl);
+            HttpUtil.setSessionAttribute(request, GlobalConfigure.SESSION_PAYMENT_ORDER_KEY, paymentOrder);
             response.sendRedirect(authUrl);
         }
         WechatPrePayOrder prePayOrder = null;
@@ -161,10 +163,7 @@ public class PaymentOrderController {
         logger.debug("h5 json 为 :" + h5PayJson);
 
         request.setAttribute("h5PayJson", h5PayJson);
-
-        request.getRequestDispatcher("classpath:/templates/wechat-open-h5.ftl").forward(request, response);
-
-        return null;
+        return "wechat-open-h5";
     }
 
     public String alipayH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) throws IOException, AlipayApiException {

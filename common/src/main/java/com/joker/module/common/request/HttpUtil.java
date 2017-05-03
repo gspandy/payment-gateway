@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 public class HttpUtil {
 
     private static Logger logger = LogManager.getLogger(HttpUtil.class);
+
     /**
      * 获取Cookie
      * @param request
@@ -91,6 +92,14 @@ public class HttpUtil {
         logger.debug("web ip address from request : " + ipAddress);
 
         return ipAddress;
+    }
+
+    public static void setSessionAttribute(HttpServletRequest request, String sessionPaymentOrderKey, Object object) {
+        request.getSession().setAttribute(sessionPaymentOrderKey, object);
+    }
+
+    public static Object getSesssionAttribute(HttpServletRequest request, String sessionPaymentOrderKey) {
+        return request.getSession().getAttribute(sessionPaymentOrderKey);
     }
 
 }
