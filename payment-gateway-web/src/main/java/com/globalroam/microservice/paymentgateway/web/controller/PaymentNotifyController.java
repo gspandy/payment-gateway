@@ -2,6 +2,7 @@ package com.globalroam.microservice.paymentgateway.web.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
 import com.joker.module.payment.alipay.AlipayConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +23,12 @@ import java.util.TreeMap;
 @RequestMapping(value = "/public/v1/payment/notification")
 public class PaymentNotifyController {
 
+
+    @Value("${payment_notify_url}")
+    private String returnUrl;
+
     @RequestMapping(value = "/alipay", method = RequestMethod.POST)
-    public void alipayNotify(HttpServletRequest request,HttpServletResponse response) {
+    public void alipayNotification(HttpServletRequest request,HttpServletResponse response) {
         try {
             Writer out = response.getWriter();
 
@@ -73,6 +78,8 @@ public class PaymentNotifyController {
                     //注意：
                     //如果签约的是可退款协议，退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
                     //如果没有签约可退款协议，那么付款完成后，支付宝系统发送该交易状态通知。
+
+
                 } else if (trade_status.equals("TRADE_SUCCESS")){
                     //判断该笔订单是否在商户网站中已经做过处理
                     //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
@@ -96,5 +103,12 @@ public class PaymentNotifyController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+
+    @RequestMapping(value = "/wechat", method = RequestMethod.POST)
+    public void wechatNotification(HttpServletRequest request,HttpServletResponse response) {
+
     }
 }

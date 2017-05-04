@@ -26,3 +26,10 @@ nbdist/
 themes/
 temp/
 target/
+alipay-payment/src/test/
+common/src/main/resources/
+common/src/test/
+logs/
+payment-gateway-web/logs/
+payment-gateway/
+paypal-payment/src/test/

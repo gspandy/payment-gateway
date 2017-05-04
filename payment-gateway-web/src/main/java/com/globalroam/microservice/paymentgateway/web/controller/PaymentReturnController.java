@@ -7,6 +7,7 @@ import com.joker.module.payment.alipay.AlipayConfig;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +28,10 @@ import java.util.Map;
 @RequestMapping(value = "/public/v1/payment/return")
 public class PaymentReturnController {
 
+
+    @Value("${payment_return_utl}")
+    private String returnUrl;
+
     public static final String SUCCESS_VIEW = "success";
     public static final String ERROR_VIEW = "error";
 
@@ -36,7 +41,7 @@ public class PaymentReturnController {
     private PaymentOrderService paymentOrderService;
 
     @RequestMapping(value = "/alipay", method = RequestMethod.GET)
-    public ModelAndView alipayNotify(HttpServletRequest request,HttpServletResponse response) {
+    public ModelAndView alipayReturnNotification(HttpServletRequest request,HttpServletResponse response) {
 
         logger.info("================= aplipay return notify start =================");
         ModelAndView modelAndView = new ModelAndView();
@@ -101,4 +106,10 @@ public class PaymentReturnController {
         logger.info("================= aplipay return notify start =================");
         return modelAndView;
     }
+
+    @RequestMapping(value = "/wechat", method = RequestMethod.GET)
+    public void wechatReturnNotification(HttpServletRequest request,HttpServletResponse response) {
+
+    }
+
 }

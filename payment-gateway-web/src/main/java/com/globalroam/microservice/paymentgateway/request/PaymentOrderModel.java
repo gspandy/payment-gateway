@@ -6,9 +6,19 @@ package com.globalroam.microservice.paymentgateway.request;
 public class PaymentOrderModel {
 
     private double amount;
+    private String outTradeNo;
     private String method;
     private String tittle;
     private String userId;
+
+
+    public String getOutTradeNo() {
+        return outTradeNo;
+    }
+
+    public void setOutTradeNo(String outTradeNo) {
+        this.outTradeNo = outTradeNo;
+    }
 
     public String getUserId() {
         return userId;

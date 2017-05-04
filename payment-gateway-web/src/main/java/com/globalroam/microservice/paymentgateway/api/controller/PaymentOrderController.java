@@ -84,13 +84,14 @@ public class PaymentOrderController {
     public EntityResponse<PaymentOrder> create(@RequestBody PaymentOrderModel paymentOrderModel) throws ServiceException {
         PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTittle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
         paymentOrder.setCreateBy(paymentOrderModel.getUserId());
+        paymentOrder.setOutTradeNo(paymentOrderModel.getOutTradeNo());
         PaymentOrder paymentOrderFromDB = paymentOrderService.add(paymentOrder);
         return new EntityResponse<PaymentOrder>(paymentOrderFromDB);
     }
 
 
     @RequestMapping(value = "/{id}/gateway", method = RequestMethod.GET)
-    @ApiOperation(notes = "执行订单支付", httpMethod = "GET", value = "创建支付单")
+    @ApiOperation(notes = "执行支付网关支付", httpMethod = "GET", value = "执行支付网关支付")
     public ModelAndView gateway(@PathVariable String id, HttpServletRequest request, HttpServletResponse response) {
         ModelAndView modelAndView = new ModelAndView();
         try {
@@ -190,12 +191,9 @@ public class PaymentOrderController {
 
         // 调用SDK生成表单
         form = client.pageExecute(alipay_request).getBody();
-        response.setContentType("text/html;charset=" + AlipayConfig.CHARSET);
-        response.getWriter().write(form);//直接将完整的表单html输出到页面
-        response.getWriter().flush();
-        response.getWriter().close();
 
-        return null;
+        request.setAttribute("form", form);
+        return "alipay-h5";
     }
 
 

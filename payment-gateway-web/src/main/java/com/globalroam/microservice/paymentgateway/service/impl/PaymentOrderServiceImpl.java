@@ -32,7 +32,7 @@ public class PaymentOrderServiceImpl implements PaymentOrderService {
         if (paymentOrder == null) {
             throw new DataNotFoundException("100001","该支付单不存在");
         }
-        logger.info("======查询支付单开始=======");
+        logger.info("======查询支付单结束=======");
         return paymentOrder;
     }
 
@@ -51,7 +51,7 @@ public class PaymentOrderServiceImpl implements PaymentOrderService {
             throw new ServiceException("100003", "支付方式不正确，暂时不支持该选项");
         }
         paymentOrder.setStatus(PaymentOrder.STATUS_CREATE);
-        paymentOrder.setOutTradeNo(DateUtil.timeStampUUID(null));
+      //  paymentOrder.setOutTradeNo(DateUtil.timeStampUUID(null));
         int count = paymentOrderMapper.insert(paymentOrder);
         if (count <= 0) {
             throw new ServiceException("100002", "添加支付单失败，请联系管理员");

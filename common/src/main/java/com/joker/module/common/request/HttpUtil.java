@@ -47,9 +47,9 @@ public class HttpUtil {
         StringBuilder webPathBuilder = new StringBuilder();
         webPathBuilder.append(request.getScheme());
         webPathBuilder.append("://");
-        webPathBuilder.append(request.getRemoteHost());
+        webPathBuilder.append(request.getServerName());
         webPathBuilder.append(":");
-        webPathBuilder.append(request.getRemotePort());
+        webPathBuilder.append(request.getServerPort());
         webPathBuilder.append(request.getContextPath());
 
         String webPath = webPathBuilder.toString();
