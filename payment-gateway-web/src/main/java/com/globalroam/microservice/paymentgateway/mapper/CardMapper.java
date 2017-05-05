@@ -9,5 +9,5 @@ import tk.mybatis.mapper.common.Mapper;
  * @Copyright:
  * @Describe:
  */
-public interface CardMapper extends Mapper<Card> {
-}
+/*public interface CardMapper extends Mapper<Card> {
+}*/

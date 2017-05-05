@@ -11,7 +11,7 @@ import javax.persistence.Table;
 public class PaymentOrder extends CommonEntity {
     private double amount;
     private String method;
-    private String tittle;
+    private String title;
     private String status;
     private String outTradeNo;
     private String tradeNo;
@@ -20,9 +20,9 @@ public class PaymentOrder extends CommonEntity {
 
     }
 
-    public PaymentOrder(double amount, String tittle, String method, String status) {
+    public PaymentOrder(double amount, String title, String method, String status) {
         this.amount = amount;
-        this.tittle = tittle;
+        this.title = title;
         this.method = method;
         this.status = status;
     }
@@ -43,12 +43,12 @@ public class PaymentOrder extends CommonEntity {
         this.amount = amount;
     }
 
-    public String getTittle() {
-        return tittle;
+    public String getTitle() {
+        return title;
     }
 
-    public void setTittle(String tittle) {
-        this.tittle = tittle;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getMethod() {

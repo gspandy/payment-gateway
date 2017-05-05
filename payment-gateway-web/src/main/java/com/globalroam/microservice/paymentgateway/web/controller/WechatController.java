@@ -74,7 +74,7 @@ public class WechatController {
 
         try {
             int amount = Integer.parseInt(paymentOrder.getAmount() * 100 + "");
-            prePayOrder = wechatPaymentService.generateOpenPrePayOrder(amount, paymentOrder.getTittle(), paymentOrder.getOutTradeNo(), wechatUserAuth.getOpenid(), WechatPaymentConfig.RETURN_URI, CommonUtil.getIpAddr(request));
+            prePayOrder = wechatPaymentService.generateOpenPrePayOrder(amount, paymentOrder.getTitle(), paymentOrder.getOutTradeNo(), wechatUserAuth.getOpenid(), WechatPaymentConfig.RETURN_URI, CommonUtil.getIpAddr(request));
         } catch (WechatServiceException e) {
             e.printStackTrace();
         }
@@ -91,6 +91,7 @@ public class WechatController {
         logger.debug("h5 json 为 :" + h5PayJson);
 
         request.setAttribute("h5PayJson", h5PayJson);
+        request.setAttribute("returnURL",HttpUtil.serviceBasePath(request) + WechatPaymentConfig.RETURN_URI);
 
         return new ModelAndView("wechat-open-h5");
 

@@ -48,8 +48,12 @@ public class HttpUtil {
         webPathBuilder.append(request.getScheme());
         webPathBuilder.append("://");
         webPathBuilder.append(request.getServerName());
-        webPathBuilder.append(":");
-        webPathBuilder.append(request.getServerPort());
+
+        if(80 != request.getServerPort()){
+            webPathBuilder.append(":");
+            webPathBuilder.append(request.getServerPort());
+        }
+
         webPathBuilder.append(request.getContextPath());
 
         String webPath = webPathBuilder.toString();

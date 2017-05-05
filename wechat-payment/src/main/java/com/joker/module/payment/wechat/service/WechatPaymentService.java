@@ -179,4 +179,19 @@ public interface WechatPaymentService {
     void generateQRCodePrePayOrder(int mount, String tittle, String productId, String outTradeNo, String notifyUrl, String ip, OutputStream qrCodeOutPut,InputStream logoInput,int width,int height) throws WechatServiceException;
 
 
+    /**
+     * 根据商户单号查询微信单信息
+     * @param outTradeNo 商户单号
+     * @return
+     * @throws WechatServiceException
+     */
+    WechatPayResult queryPayResult(String outTradeNo) throws WechatServiceException;
+
+    /**
+     * 解析查询支付单结果
+     * @param xmlData
+     * @return
+     * @throws WechatServiceException
+     */
+     WechatPayResult parseQueryOrderXMLData(String xmlData) throws WechatServiceException;
 }

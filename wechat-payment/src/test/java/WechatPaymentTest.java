@@ -49,10 +49,24 @@ public class WechatPaymentTest {
     }
 
     @Test
-    public void testCommonOrder()   {
+    public void testGenerateUrlOrder()   {
 
         try {
             WechatPrePayOrder wechatPrePayOrder = wechatPaymentService.generateURLPrePayOrder(1, "test", "test product", "20170427133425", "{\"a\":\"b\"}", "http://wechat/testopen/order", "127.0.0.1");
+        } catch (WechatServiceException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    @Test
+    public void testQueryOrder()   {
+
+        try {
+            WechatPayResult wechatPayResult = wechatPaymentService.queryPayResult("20170427133425");
+            System.out.println(wechatPayResult.getTradeState());
         } catch (WechatServiceException e) {
             e.printStackTrace();
         }

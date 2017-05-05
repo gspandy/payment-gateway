@@ -5,12 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.joker.module.payment.wechat.config.WechatPaymentConfig;
-import com.joker.module.payment.wechat.domain.LongURL;
-import com.joker.module.payment.wechat.domain.WechatOrder;
-import com.joker.module.payment.wechat.domain.WechatPayResult;
-import com.joker.module.payment.wechat.domain.WechatPrePayOrder;
+import com.joker.module.payment.wechat.domain.*;
 import com.joker.module.payment.wechat.exception.LongURLException;
 import com.joker.module.payment.wechat.exception.WechatOrderException;
+import com.joker.module.payment.wechat.exception.WechatServiceException;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -179,6 +177,7 @@ public class WechatPaymentUtil {
         sb.append("key=" + key);
         System.out.println(sb.toString());
         String sign = MD5Encode(sb.toString(), characterEncoding).toUpperCase();
+        System.out.println("sign generated : " + sign);
         return sign;
     }
 
@@ -335,6 +334,8 @@ public class WechatPaymentUtil {
         return checkSign(params,wechatPayResult.getSign(),key);
     }
 
+
+
     
     public static String generateSortedXMLFromLongURL(LongURL longURL1) throws LongURLException {
         checkLongURLRequiredParams(longURL1);
@@ -370,4 +371,63 @@ public class WechatPaymentUtil {
         }
     }
 
+    public static String generateSortedXMLFromQueryOrderParams(QueryOrderParam queryOrderParam, String characterEncodingUtf8) throws WechatServiceException {
+
+        SortedMap<Object, Object> parameters = new TreeMap<Object, Object>();
+        checkQueryOrderRequiredParams(queryOrderParam);
+        addQueryOrderParamsToSortedMap(queryOrderParam, parameters);
+        String mySign = createSign("UTF-8", parameters, queryOrderParam.getKey());
+        parameters.put("sign", mySign);
+
+        return CommonUtil.converterMapToXml(parameters);
+    }
+
+    private static void addQueryOrderParamsToSortedMap(QueryOrderParam queryOrderParam, SortedMap<Object, Object> parameters) {
+        parameters.put("appid", queryOrderParam.getAppid());
+        parameters.put("mch_id", queryOrderParam.getMchId());
+        parameters.put("nonce_str", queryOrderParam.getNonceStr());
+
+        if (null != queryOrderParam.getTransactionId()) {
+            parameters.put("transaction_id", queryOrderParam.getTransactionId());
+        }
+
+        if (null != queryOrderParam.getOutTradeNo()) {
+            parameters.put("out_trade_no", queryOrderParam.getOutTradeNo());
+        }
+    }
+
+    private static void checkQueryOrderRequiredParams(QueryOrderParam queryOrderParam) throws WechatServiceException {
+        if (queryOrderParam.getAppid() == null) {
+            throw new WechatServiceException("APPID 不能为空。");
+        }
+
+        if (queryOrderParam.getMchId() == null) {
+            throw new WechatServiceException("mch id 不能为空。");
+        }
+
+        if (queryOrderParam.getNonceStr() == null) {
+            throw new WechatServiceException("nonce str 不能为空。");
+        }
+
+        if (queryOrderParam.getTransactionId() == null && queryOrderParam.getOutTradeNo() == null) {
+
+            throw new WechatServiceException("transaction id 和 out trade no  不能全为空。");
+        }
+
+
+    }
+
+    public static boolean checkQueryOrderSign(WechatPayResult wechatPayResult, String key) {
+        SortedMap<Object, Object> params = new TreeMap<Object, Object>();
+        params.put("return_msg", wechatPayResult.getReturnMsg());
+        params.put("appid", wechatPayResult.getAppid());
+        params.put("mch_id", wechatPayResult.getMchId());
+        params.put("nonce_str", wechatPayResult.getNonceStr());
+        params.put("result_code", wechatPayResult.getResultCode());
+        params.put("return_code", wechatPayResult.getReturnCode());
+        params.put("out_trade_no", wechatPayResult.getOutTradeNo());
+        params.put("trade_state", wechatPayResult.getTradeState());
+        params.put("trade_state_desc", wechatPayResult.getTradeStateDesc());
+        return checkSign(params,wechatPayResult.getSign(),key);
+    }
 }

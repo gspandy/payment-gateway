@@ -33,7 +33,11 @@
                     <AppenderRef ref="RollingFile"/>
                     <AppenderRef ref="Console"/>
           </Logger>
+
         <Logger name="org.springframework" level="error" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="springfox.documentation" level="error" additivity="false">
             <AppenderRef ref="Console"/>
         </Logger>
 

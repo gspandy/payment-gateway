@@ -81,10 +81,15 @@ public class PaymentOrderController {
     @RequestMapping(value = "", produces = {"application/json;charset=UTF-8"}, consumes = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
     @ApiOperation(notes = "此API为创建支付单", httpMethod = "POST", value = "创建支付单")
     @ResponseBody
-    public EntityResponse<PaymentOrder> create(@RequestBody PaymentOrderModel paymentOrderModel) throws ServiceException {
-        PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTittle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
+    public EntityResponse<PaymentOrder> create(@RequestBody PaymentOrderModel paymentOrderModel) throws ServiceException, DataNotFoundException {
+        PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTitle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
         paymentOrder.setCreateBy(paymentOrderModel.getUserId());
         paymentOrder.setOutTradeNo(paymentOrderModel.getOutTradeNo());
+        PaymentOrder paymentOrderTemp = paymentOrderService.getByOutTradeNo(paymentOrder.getOutTradeNo());
+
+        if (paymentOrderTemp != null) {
+            throw new DataNotFoundException("100006","该支付单商户单号已经存在");
+        }
         PaymentOrder paymentOrderFromDB = paymentOrderService.add(paymentOrder);
         return new EntityResponse<PaymentOrder>(paymentOrderFromDB);
     }
@@ -117,6 +122,7 @@ public class PaymentOrderController {
                     return modelAndView;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             request.setAttribute("error", "调用支付接口失败");
             modelAndView.setViewName("error");
             return modelAndView;
@@ -147,7 +153,7 @@ public class PaymentOrderController {
 
         try {
             int amount = Integer.parseInt(paymentOrder.getAmount() * 100 + "");
-            prePayOrder = wechatPaymentService.generateOpenPrePayOrder(amount, paymentOrder.getTittle(), paymentOrder.getOutTradeNo(), wechatUserAuth.getOpenid(), WechatPaymentConfig.RETURN_URI, CommonUtil.getIpAddr(request));
+            prePayOrder = wechatPaymentService.generateOpenPrePayOrder(amount, paymentOrder.getTitle(), paymentOrder.getOutTradeNo(), wechatUserAuth.getOpenid(), WechatPaymentConfig.RETURN_URI, CommonUtil.getIpAddr(request));
         } catch (WechatServiceException e) {
             e.printStackTrace();
         }
@@ -164,6 +170,8 @@ public class PaymentOrderController {
         logger.debug("h5 json 为 :" + h5PayJson);
 
         request.setAttribute("h5PayJson", h5PayJson);
+        request.setAttribute("returnURL",HttpUtil.serviceBasePath(request) + WechatPaymentConfig.RETURN_URI);
+
         return "wechat-open-h5";
     }
 
@@ -175,16 +183,16 @@ public class PaymentOrderController {
         // 封装请求支付信息
         AlipayTradeWapPayModel model = new AlipayTradeWapPayModel();
         model.setOutTradeNo(paymentOrder.getOutTradeNo());
-        model.setSubject(paymentOrder.getTittle());
+        model.setSubject(paymentOrder.getTitle());
         model.setTotalAmount(paymentOrder.getAmount() + "");
         model.setBody(paymentOrder.getDetail());
         model.setTimeoutExpress(AlipayConfig.TIMEOUT_EXPRESS);
         model.setProductCode(AlipayConfig.PRODUCT_CODE_QUICK_WAP_PAY); // 销售产品码 必填
         alipay_request.setBizModel(model);
         // 设置异步通知地址
-        alipay_request.setNotifyUrl(AlipayConfig.NOTIFY_URL);
+        alipay_request.setNotifyUrl(HttpUtil.serviceBasePath(request) + AlipayConfig.NOTIFY_URL);
         // 设置同步地址
-        alipay_request.setReturnUrl(AlipayConfig.RETURN_URL);
+        alipay_request.setReturnUrl(HttpUtil.serviceBasePath(request) + AlipayConfig.RETURN_URL);
 
         // form表单生产
         String form = "";

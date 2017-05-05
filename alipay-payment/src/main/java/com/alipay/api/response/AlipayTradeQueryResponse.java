@@ -134,6 +134,8 @@ public class AlipayTradeQueryResponse extends AlipayResponse {
 	@ApiField("trade_status")
 	private String tradeStatus;
 
+
+	public static String TRADE_SUCCESS = "TRADE_SUCCESS";
 	/** 
 	 * 本交易支付时使用的所有优惠券信息
 	 */

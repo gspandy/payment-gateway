@@ -48,7 +48,7 @@ public class AlipayConfig {
             CHARSET = properties.getProperty("CHARSET");
             FORMAT = properties.getProperty("FORMAT");
             ALIPAY_PUBLIC_KEY = properties.getProperty("ALIPAY_PUBLIC_KEY");
-            log_path = properties.getProperty("log_path");
+            log_path = properties.getProperty("LOG_PATH");
             SIGNTYPE = properties.getProperty("SIGNTYPE");
             TIMEOUT_EXPRESS = properties.getProperty("TIMEOUT_EXPRESS");
         } catch (IOException e) {

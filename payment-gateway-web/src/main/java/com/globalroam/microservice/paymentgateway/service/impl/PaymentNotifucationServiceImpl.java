@@ -10,9 +10,8 @@ import com.joker.module.common.httpclient.HttpRequest;
 public class PaymentNotifucationServiceImpl implements PaymentNotificationService {
 
     @Override
-    public boolean notification(PaymentOrder paymentOrder) {
+    public void notification(PaymentOrder paymentOrder) {
 
-        return true;
     }
 
 

@@ -12,5 +12,7 @@ public interface PaymentOrderService {
     PaymentOrder update(PaymentOrder paymentOrder) throws ServiceException, DataNotFoundException;
     PaymentOrder add(PaymentOrder paymentOrder) throws ServiceException;
 
-    PaymentOrder getByOutTradeNo(String out_trade_no) throws ServiceException, DataNotFoundException;
+    PaymentOrder getByAmountAndOutTradeNo(String out_trade_no,double amount) throws ServiceException, DataNotFoundException;
+
+    PaymentOrder getByOutTradeNo(String outTradeNo);
 }

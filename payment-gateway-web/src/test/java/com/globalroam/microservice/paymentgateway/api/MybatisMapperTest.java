@@ -2,7 +2,7 @@ package com.globalroam.microservice.paymentgateway.api;
 
 import com.globalroam.microservice.paymentgateway.entity.Card;
 import com.globalroam.microservice.paymentgateway.enums.CardType;
-import com.globalroam.microservice.paymentgateway.mapper.CardMapper;
+//import com.globalroam.microservice.paymentgateway.mapper.CardMapper;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,7 +14,7 @@ import java.util.List;
  * @Copyright:
  * @Describe:
  */
-public class MybatisMapperTest extends WalletServiceApplicationTests {
+/*public class MybatisMapperTest extends WalletServiceApplicationTests {
 
 
     @Autowired
@@ -35,4 +35,4 @@ public class MybatisMapperTest extends WalletServiceApplicationTests {
         mapper.insert(card);
     }
 
-}
+}*/

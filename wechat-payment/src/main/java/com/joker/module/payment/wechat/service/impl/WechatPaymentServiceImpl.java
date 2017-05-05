@@ -328,6 +328,29 @@ public class WechatPaymentServiceImpl implements WechatPaymentService {
          throw new WechatServiceException("签名有问题，可能是非法通知。");
     }
 
+
+    @Override
+    public WechatPayResult parseQueryOrderXMLData(String xmlData) throws WechatServiceException {
+
+        WechatPayResult wechatPayResult = WechatPaymentUtil.parseNotifyXmlData(xmlData);
+
+        if(null == wechatPayResult){
+            throw new WechatServiceException("数据为空，请求异常，或者数据格式不对。");
+        }
+
+        boolean result = WechatPaymentUtil.checkQueryOrderSign(wechatPayResult,WechatPaymentConfig.KEY);
+
+
+        if(!WechatPaymentConfig.APPID.equals(wechatPayResult.getAppid())){
+            throw new WechatServiceException("APPID 对应不上，可能是伪装数据");
+        }
+
+        if(result){
+            return  wechatPayResult;
+        }
+        throw new WechatServiceException("签名有问题，可能是非法通知。");
+    }
+
     @Override
     public String transferLong2ShortURL(String longURL) throws WechatServiceException {
 
@@ -434,8 +457,54 @@ public class WechatPaymentServiceImpl implements WechatPaymentService {
         } catch (WechatOrderException e) {
             logger.debug("WechatPaymentServiceImpl.generateOpenPrePayOrder:" + xmlParams);
             e.printStackTrace();
-            throw new WechatServiceException("创建生成预支付订单失败");
+            throw new WechatServiceException("创建生成请求数据失败");
         }
         return xmlParams;
+    }
+
+
+    @Override
+    public WechatPayResult queryPayResult(String outTradeNo) throws WechatServiceException {
+
+        if (null == outTradeNo || "".equals(outTradeNo)) {
+            throw new WechatServiceException("outTradeNo 不能为空");
+        }
+
+        QueryOrderParam queryOrderParam = new QueryOrderParam();
+        queryOrderParam.setKey(WechatPaymentConfig.KEY);
+        queryOrderParam.setAppid(WechatPaymentConfig.APPID);
+        queryOrderParam.setMchId(WechatPaymentConfig.MCH_ID);
+        queryOrderParam.setOutTradeNo(outTradeNo);
+        queryOrderParam.setNonceStr(UUID.randomUUID().toString().replaceAll("-", ""));
+
+        logger.debug("wechat 查询订单:" + queryOrderParam.toString());
+
+        String xmlParams = null;
+        xmlParams = getQueryOrderParamsXMLString(queryOrderParam);
+
+        WechatPaymentHttpClient client = new WechatPaymentHttpClient(WechatPaymentHttpClient.ORDER_ADDRESS);
+        Response response = client.post(WechatPaymentHttpClient.QUERY_ORDER_URI, xmlParams);
+
+        if (!response.isSuccess()) {
+            logger.debug("WechatPaymentServiceImpl.generateOpenPrePayOrder :" + response.getString());
+            throw new WechatServiceException("查询订单失败");
+        }
+
+        WechatPayResult wechatPayResult = null;
+        wechatPayResult = parseQueryOrderXMLData(response.getString());
+
+        if (wechatPayResult != null && WechatPrePayOrder.RETURN_CODE_FAIL.equalsIgnoreCase(wechatPayResult.getReturnCode())) {
+            throw new WebServiceException("微信接口调用失败:原因" + wechatPayResult.getReturnMsg());
+        }
+
+        return wechatPayResult;
+    }
+
+    private String getQueryOrderParamsXMLString(QueryOrderParam queryOrderParam) throws WechatServiceException {
+
+        String xmlParams = WechatPaymentUtil.generateSortedXMLFromQueryOrderParams(queryOrderParam, WechatPaymentUtil.CHARACTER_ENCODING_UTF8);
+        logger.debug("WechatPaymentServiceImpl.generateQueryOrder:" + xmlParams);
+        return xmlParams;
+
     }
 }

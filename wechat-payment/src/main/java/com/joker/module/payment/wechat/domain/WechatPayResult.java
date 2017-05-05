@@ -25,6 +25,7 @@ public class WechatPayResult implements Serializable{
     private String timeEnd;//支付完成时间，格式为yyyyMMddHHmmss，如2009年12月25日9点10分10秒表示为20091225091010。其他详见时间规则
     private Integer totalFee;//订单总金额，单位为分
     private String tradeType;//JSAPI、NATIVE、APP
+    private String tradeState;//SUCCESS—支付成功 REFUND—转入退款  NOTPAY—未支付 CLOSED—已关闭 REVOKED—已撤销（刷卡支付） USERPAYING--用户支付中 PAYERROR--支付失败(其他原因，如银行返回失败)
     private String transactionId;//微信支付订单号
     private String returnMsg;// 返回信息，如非空，为错误原因 签名失败 参数格式校验错误
     private String deviceInfo;//微信支付分配的终端设备号，
@@ -35,6 +36,8 @@ public class WechatPayResult implements Serializable{
 //    private String cashFeeType;/
     private Integer couponFee;//货币类型，符合ISO4217标准的三位字母代码，默认人民币：CNY，其他值列表详见货币类型
     private Integer couponCount;
+    private String tradeStateDesc;
+
 
 
     public String getAppid() {
@@ -229,9 +232,25 @@ public class WechatPayResult implements Serializable{
         this.couponCount = couponCount;
     }
 
+    public String getTradeState() {
+        return tradeState;
+    }
+
+    public void setTradeState(String tradeState) {
+        this.tradeState = tradeState;
+    }
 
     public boolean isSuccess(){
         return SUCCESS.equalsIgnoreCase(this.resultCode);
+    }
+
+
+    public String getTradeStateDesc() {
+        return tradeStateDesc;
+    }
+
+    public void setTradeStateDesc(String tradeStateDesc) {
+        this.tradeStateDesc = tradeStateDesc;
     }
 
     @Override
@@ -252,6 +271,7 @@ public class WechatPayResult implements Serializable{
                 ", timeEnd='" + timeEnd + '\'' +
                 ", totalFee=" + totalFee +
                 ", tradeType='" + tradeType + '\'' +
+                ", tradeState='" + tradeState + '\'' +
                 ", transactionId='" + transactionId + '\'' +
                 ", returnMsg='" + returnMsg + '\'' +
                 ", deviceInfo='" + deviceInfo + '\'' +
@@ -261,6 +281,7 @@ public class WechatPayResult implements Serializable{
                 ", cashFee=" + cashFee +
                 ", couponFee=" + couponFee +
                 ", couponCount=" + couponCount +
+                ", tradeStateDesc=" + tradeStateDesc +
                 '}';
     }
 }

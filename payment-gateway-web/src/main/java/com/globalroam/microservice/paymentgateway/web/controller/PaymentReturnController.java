@@ -1,16 +1,26 @@
 package com.globalroam.microservice.paymentgateway.web.controller;
 
+import com.alipay.api.AlipayClient;
+import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.domain.AlipayTradeQueryModel;
 import com.alipay.api.internal.util.AlipaySignature;
+import com.alipay.api.request.AlipayTradeQueryRequest;
+import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.globalroam.microservice.paymentgateway.entity.PaymentOrder;
+import com.globalroam.microservice.paymentgateway.exception.DataNotFoundException;
+import com.globalroam.microservice.paymentgateway.exception.ServiceException;
+import com.globalroam.microservice.paymentgateway.request.PaymentOrderModel;
 import com.globalroam.microservice.paymentgateway.service.PaymentOrderService;
 import com.joker.module.payment.alipay.AlipayConfig;
+import com.joker.module.payment.wechat.domain.WechatPayResult;
+import com.joker.module.payment.wechat.exception.WechatServiceException;
+import com.joker.module.payment.wechat.service.WechatPaymentService;
+import com.joker.module.payment.wechat.service.impl.WechatPaymentServiceImpl;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -73,6 +83,7 @@ public class PaymentReturnController {
             String tradeNo = new String(request.getParameter("trade_no").getBytes("ISO-8859-1"), "UTF-8");
             logger.info("tradeNo is : " + tradeNo);
 
+            double amount = Double.parseDouble(request.getParameter("total_amount"));
 
             //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以上仅供参考)//
             //计算得出通知验证结果
@@ -80,11 +91,33 @@ public class PaymentReturnController {
             boolean verify_result = AlipaySignature.rsaCheckV1(params, AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.CHARSET, AlipayConfig.SIGNTYPE);
 
             if (verify_result) {//验证成功
-                logger.info("sign veridy is success.");
-                PaymentOrder paymentOrder = paymentOrderService.getByOutTradeNo(outTradeNo);
+                logger.info("sign verid is success.");
+                PaymentOrder paymentOrder = paymentOrderService.getByAmountAndOutTradeNo(outTradeNo,amount);
+
+                // SDK 公共请求类，包含公共请求参数，以及封装了签名与验签，开发者无需关注签名与验签
+                AlipayClient client = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY,AlipayConfig.SIGNTYPE);
+                AlipayTradeQueryRequest alipay_request = new AlipayTradeQueryRequest();
+
+                AlipayTradeQueryModel model=new AlipayTradeQueryModel();
+                model.setOutTradeNo(outTradeNo);
+                model.setTradeNo(tradeNo);
+                alipay_request.setBizModel(model);
+
+                AlipayTradeQueryResponse alipay_response =client.execute(alipay_request);
+
+                logger.debug("alipay order request response body :");
+
+                if (!AlipayTradeQueryResponse.TRADE_SUCCESS.equalsIgnoreCase(alipay_response.getTradeStatus())) {
+                    logger.info("payment order status is :  " + alipay_response.getTradeStatus());
+                    paymentOrder.setStatus(PaymentOrder.STATUS_FAIL);
+                    paymentOrder.setTradeNo(tradeNo);
+                    paymentOrderService.update(paymentOrder);
+                    modelAndView.setViewName(ERROR_VIEW);
+                    return modelAndView;
+                }
 
                 if (paymentOrder == null || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus()) || PaymentOrder.STATUS_COMPLETE.equalsIgnoreCase(paymentOrder.getStatus())) {
-                    logger.info("payment order is already use..");
+                    logger.info("payment order is not exist or already use..");
                     modelAndView.setViewName(ERROR_VIEW);
                     return modelAndView;
                 }
@@ -92,6 +125,7 @@ public class PaymentReturnController {
                 paymentOrder.setStatus(PaymentOrder.STATUS_SUCCESS);
                 paymentOrder.setTradeNo(tradeNo);
                 paymentOrderService.update(paymentOrder);
+                modelAndView.addObject("paymentOrder", paymentOrder);
                 modelAndView.setViewName(SUCCESS_VIEW);
                 logger.info("payment order is updated, payment successfully..");
             }else {
@@ -108,8 +142,36 @@ public class PaymentReturnController {
     }
 
     @RequestMapping(value = "/wechat", method = RequestMethod.GET)
-    public void wechatReturnNotification(HttpServletRequest request,HttpServletResponse response) {
+    public ModelAndView wechatReturnNotification(@RequestParam String id ,HttpServletRequest request, HttpServletResponse response) throws ServiceException, DataNotFoundException {
+        logger.info("================= wechat return notify start =================");
+        ModelAndView modelAndView = new ModelAndView();
 
+       PaymentOrder paymentOrder = paymentOrderService.getById(id);
+        if (paymentOrder == null) {
+            modelAndView.setViewName(ERROR_VIEW);
+            return modelAndView;
+        }
+
+        WechatPaymentService wechatPaymentService = new WechatPaymentServiceImpl();
+        try {
+            WechatPayResult payResult = wechatPaymentService.queryPayResult(paymentOrder.getOutTradeNo());
+            if (WechatPayResult.SUCCESS.equalsIgnoreCase(payResult.getTradeState())) {
+                paymentOrder.setStatus(PaymentOrder.STATUS_SUCCESS);
+                paymentOrderService.update(paymentOrder);
+                modelAndView.addObject("paymentOrder", paymentOrder);
+                modelAndView.setViewName(SUCCESS_VIEW);
+                return modelAndView;
+            }
+
+            paymentOrder.setStatus(PaymentOrder.STATUS_FAIL);
+            paymentOrderService.update(paymentOrder);
+
+        } catch (WechatServiceException e) {
+            modelAndView.setViewName(ERROR_VIEW);
+            return modelAndView;
+        }
+
+        return modelAndView;
     }
 
 }

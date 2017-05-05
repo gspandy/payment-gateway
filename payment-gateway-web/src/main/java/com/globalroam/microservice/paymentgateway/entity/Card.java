@@ -13,7 +13,7 @@ import javax.persistence.Table;
  * @Copyright:
  * @Describe:
  */
-@Table(name = "ws_card")
+//@Table(name = "ws_card")
 public class Card {
 
     /**

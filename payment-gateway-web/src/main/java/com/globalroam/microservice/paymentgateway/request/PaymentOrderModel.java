@@ -8,7 +8,7 @@ public class PaymentOrderModel {
     private double amount;
     private String outTradeNo;
     private String method;
-    private String tittle;
+    private String title;
     private String userId;
 
 
@@ -44,11 +44,11 @@ public class PaymentOrderModel {
         this.method = method;
     }
 
-    public String getTittle() {
-        return tittle;
+    public String getTitle() {
+        return title;
     }
 
-    public void setTittle(String tittle) {
-        this.tittle = tittle;
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

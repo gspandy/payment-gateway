@@ -268,7 +268,7 @@ public class HttpRequest {
 
             logger.info("http status code");
             logger.info(resultStatus);
-            logger.info("http request");
+            logger.info("http request\n\r");
             logger.info(resultString);
 
         } catch (IOException e) {
