@@ -102,8 +102,13 @@ public class PaymentOrderController {
         try {
             PaymentOrder paymentOrder = paymentOrderService.getById(id);
 
-            if (PaymentOrder.STATUS_COMPLETE.equals(paymentOrder.getStatus())) {
+            if (PaymentOrder.STATUS_COMPLETE.equals(paymentOrder.getStatus()) || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus())) {
                 //TODO 这里异常状态应该有UI提示
+                modelAndView.setViewName("error");
+                modelAndView.addObject("paymentOrder", paymentOrder);
+                modelAndView.addObject("result", "FAILED");
+                modelAndView.addObject("message", "改订单已经支付过了");
+                return modelAndView;
             }
 
             paymentOrder.setStatus(PaymentOrder.STATUS_PAY);
@@ -129,7 +134,6 @@ public class PaymentOrderController {
         }
 
     }
-
 
     private String wechatH5(PaymentOrder paymentOrder, HttpServletRequest request, HttpServletResponse response) {
         return null;

@@ -10,7 +10,24 @@ public class PaymentOrderModel {
     private String method;
     private String title;
     private String userId;
+    private String returnURL;
+    private String notifyURL;
 
+    public String getReturnURL() {
+        return returnURL;
+    }
+
+    public void setReturnURL(String returnURL) {
+        this.returnURL = returnURL;
+    }
+
+    public String getNotifyURL() {
+        return notifyURL;
+    }
+
+    public void setNotifyURL(String notifyURL) {
+        this.notifyURL = notifyURL;
+    }
 
     public String getOutTradeNo() {
         return outTradeNo;

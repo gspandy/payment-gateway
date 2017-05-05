@@ -1,7 +1,11 @@
 package com.globalroam.microservice.paymentgateway.web.controller;
 
 import com.alipay.api.internal.util.AlipaySignature;
+import com.globalroam.microservice.paymentgateway.entity.PaymentOrder;
+import com.globalroam.microservice.paymentgateway.service.PaymentNotificationService;
+import com.globalroam.microservice.paymentgateway.service.PaymentOrderService;
 import com.joker.module.payment.alipay.AlipayConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,10 +27,12 @@ import java.util.TreeMap;
 @RequestMapping(value = "/public/v1/payment/notification")
 public class PaymentNotifyController {
 
+    @Autowired
+    private PaymentNotificationService paymentNotificationService;
 
-    @Value("${payment_notify_url}")
-    private String returnUrl;
 
+    @Autowired
+    private PaymentOrderService paymentOrderService;
     @RequestMapping(value = "/alipay", method = RequestMethod.POST)
     public void alipayNotification(HttpServletRequest request,HttpServletResponse response) {
         try {
@@ -50,10 +56,10 @@ public class PaymentNotifyController {
             //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以下仅供参考)//
             //商户订单号
 
-            String out_trade_no = new String(request.getParameter("out_trade_no").getBytes("ISO-8859-1"),"UTF-8");
+            String outTradeNo = new String(request.getParameter("out_trade_no").getBytes("ISO-8859-1"),"UTF-8");
 
             //支付宝交易号
-            String trade_no = new String(request.getParameter("trade_no").getBytes("ISO-8859-1"),"UTF-8");
+            String tradeNo = new String(request.getParameter("trade_no").getBytes("ISO-8859-1"),"UTF-8");
 
             //交易状态
             String trade_status = new String(request.getParameter("trade_status").getBytes("ISO-8859-1"),"UTF-8");
@@ -80,11 +86,14 @@ public class PaymentNotifyController {
                     //如果没有签约可退款协议，那么付款完成后，支付宝系统发送该交易状态通知。
 
 
-                } else if (trade_status.equals("TRADE_SUCCESS")){
+                } else if (trade_status.equals("TRADE_SUCCESS")) {
                     //判断该笔订单是否在商户网站中已经做过处理
                     //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
                     //请务必判断请求时的total_fee、seller_id与通知时获取的total_fee、seller_id为一致的
                     //如果有做过处理，不执行商户的业务程序
+                    PaymentOrder paymentOrder = paymentOrderService.getByOutTradeNo(outTradeNo);
+
+                    paymentNotificationService.notification(paymentOrder);
 
                     //注意：
                     //如果签约的是可退款协议，那么付款完成后，支付宝系统发送该交易状态通知。
@@ -109,6 +118,8 @@ public class PaymentNotifyController {
 
     @RequestMapping(value = "/wechat", method = RequestMethod.POST)
     public void wechatNotification(HttpServletRequest request,HttpServletResponse response) {
+
+
 
     }
 }

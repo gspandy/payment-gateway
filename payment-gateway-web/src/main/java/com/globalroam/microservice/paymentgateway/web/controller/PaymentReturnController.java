@@ -38,10 +38,6 @@ import java.util.Map;
 @RequestMapping(value = "/public/v1/payment/return")
 public class PaymentReturnController {
 
-
-    @Value("${payment_return_utl}")
-    private String returnUrl;
-
     public static final String SUCCESS_VIEW = "success";
     public static final String ERROR_VIEW = "error";
 
@@ -92,8 +88,6 @@ public class PaymentReturnController {
 
             if (verify_result) {//验证成功
                 logger.info("sign verid is success.");
-                PaymentOrder paymentOrder = paymentOrderService.getByAmountAndOutTradeNo(outTradeNo,amount);
-
                 // SDK 公共请求类，包含公共请求参数，以及封装了签名与验签，开发者无需关注签名与验签
                 AlipayClient client = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, AlipayConfig.FORMAT, AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY,AlipayConfig.SIGNTYPE);
                 AlipayTradeQueryRequest alipay_request = new AlipayTradeQueryRequest();
@@ -103,21 +97,28 @@ public class PaymentReturnController {
                 model.setTradeNo(tradeNo);
                 alipay_request.setBizModel(model);
 
-                AlipayTradeQueryResponse alipay_response =client.execute(alipay_request);
+                AlipayTradeQueryResponse alipayResponse =client.execute(alipay_request);
 
-                logger.debug("alipay order request response body :");
+                logger.debug("alipay order request response body :" + alipayResponse.getBody());
 
-                if (!AlipayTradeQueryResponse.TRADE_SUCCESS.equalsIgnoreCase(alipay_response.getTradeStatus())) {
-                    logger.info("payment order status is :  " + alipay_response.getTradeStatus());
+
+                PaymentOrder paymentOrder = paymentOrderService.getByAmountAndOutTradeNo(outTradeNo,amount);
+
+                if (!AlipayTradeQueryResponse.TRADE_SUCCESS.equalsIgnoreCase(alipayResponse.getTradeStatus())) {
+                    logger.info("payment order status is :  " + alipayResponse.getTradeStatus());
                     paymentOrder.setStatus(PaymentOrder.STATUS_FAIL);
                     paymentOrder.setTradeNo(tradeNo);
                     paymentOrderService.update(paymentOrder);
+                    modelAndView.addObject("result", "FAILED");
+                    modelAndView.addObject("message", "订单不是真的成功");
                     modelAndView.setViewName(ERROR_VIEW);
                     return modelAndView;
                 }
 
                 if (paymentOrder == null || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus()) || PaymentOrder.STATUS_COMPLETE.equalsIgnoreCase(paymentOrder.getStatus())) {
                     logger.info("payment order is not exist or already use..");
+                    modelAndView.addObject("result", "FAILED");
+                    modelAndView.addObject("message", "支付单找不着");
                     modelAndView.setViewName(ERROR_VIEW);
                     return modelAndView;
                 }
@@ -135,6 +136,8 @@ public class PaymentReturnController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            modelAndView.addObject("result", "FAILED");
+            modelAndView.addObject("message", "系统错误");
             modelAndView.setViewName(ERROR_VIEW);
         }
         logger.info("================= aplipay return notify start =================");
@@ -148,6 +151,8 @@ public class PaymentReturnController {
 
        PaymentOrder paymentOrder = paymentOrderService.getById(id);
         if (paymentOrder == null) {
+            modelAndView.addObject("result", "FAILED");
+            modelAndView.addObject("message", "支付单找不着");
             modelAndView.setViewName(ERROR_VIEW);
             return modelAndView;
         }
@@ -163,10 +168,14 @@ public class PaymentReturnController {
                 return modelAndView;
             }
 
+            modelAndView.addObject("result", "FAILED");
+            modelAndView.addObject("message", "支付单不是真的支付成功");
             paymentOrder.setStatus(PaymentOrder.STATUS_FAIL);
             paymentOrderService.update(paymentOrder);
 
         } catch (WechatServiceException e) {
+            modelAndView.addObject("result", "FAILED");
+            modelAndView.addObject("message", "系统错误。");
             modelAndView.setViewName(ERROR_VIEW);
             return modelAndView;
         }

@@ -16,6 +16,9 @@ public class PaymentOrder extends CommonEntity {
     private String outTradeNo;
     private String tradeNo;
 
+    private String returnURL;
+    private String notifyURL;
+
     public PaymentOrder() {
 
     }
@@ -65,6 +68,22 @@ public class PaymentOrder extends CommonEntity {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getReturnURL() {
+        return returnURL;
+    }
+
+    public void setReturnURL(String returnURL) {
+        this.returnURL = returnURL;
+    }
+
+    public String getNotifyURL() {
+        return notifyURL;
+    }
+
+    public void setNotifyURL(String notifyURL) {
+        this.notifyURL = notifyURL;
     }
 
     //支付单创建状态

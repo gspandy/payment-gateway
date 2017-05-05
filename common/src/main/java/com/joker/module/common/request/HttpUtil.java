@@ -1,5 +1,6 @@
 package com.joker.module.common.request;
 
+import jdk.nashorn.internal.runtime.regexp.joni.Regex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,6 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.PublicKey;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Created by Joker on 2017/5/2.
@@ -104,6 +109,89 @@ public class HttpUtil {
 
     public static Object getSesssionAttribute(HttpServletRequest request, String sessionPaymentOrderKey) {
         return request.getSession().getAttribute(sessionPaymentOrderKey);
+    }
+
+    public static Host parseURL(String url) {
+
+        logger.debug("parse URL : " + url);
+
+        String prototype = url.substring(0, url.indexOf("://"));
+        System.out.println("prototype : " + prototype);
+
+        String restURL = url.substring(url.indexOf("://") + 3, url.length());
+        String port = "80";
+
+        if ("http".equalsIgnoreCase(prototype)) {
+            port = "80";
+        } else if ("https".equalsIgnoreCase(prototype)) {
+            port = "443";
+        }
+
+
+        String address = "";
+        String uri = "";
+        if (restURL.indexOf(":") >= 0) {
+            address = restURL.substring(0, restURL.indexOf(":"));
+            port = restURL.substring(restURL.indexOf(":") + 1, restURL.indexOf("/"));
+            uri = restURL.substring(restURL.indexOf("/"), restURL.length());
+        } else {
+            address = restURL.substring(0, restURL.indexOf("/"));
+            uri = restURL.substring(restURL.indexOf("/"), restURL.length());
+        }
+        System.out.println("address : " + address);
+        System.out.println("port : " + port);
+        System.out.println("uri : " + uri);
+        Host host = new Host(prototype, address, port, uri);
+        return host;
+    }
+
+    public static class Host {
+        private String httpType;
+        private String address;
+        private String port;
+        private String uri;
+
+        public Host() {
+        }
+
+        public Host(String httpType, String address, String port, String uri) {
+            this.httpType = httpType;
+            this.address = address;
+            this.port = port;
+            this.uri = uri;
+        }
+
+        public String getHttpType() {
+            return httpType;
+        }
+
+        public void setHttpType(String httpType) {
+            this.httpType = httpType;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getPort() {
+            return port;
+        }
+
+        public void setPort(String port) {
+            this.port = port;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public void setUri(String uri) {
+            this.uri = uri;
+        }
     }
 
 }

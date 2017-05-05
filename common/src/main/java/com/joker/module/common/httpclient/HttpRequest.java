@@ -75,6 +75,7 @@ public class HttpRequest {
         this.port = port;
         httpClient = new HttpClient();
 
+
         if (type != null && TYPE_HTTPS.equalsIgnoreCase(type)) {
             Protocol protocol = new Protocol("https", new LocalSSLSocketFactory(), port);
             Protocol.registerProtocol("https", protocol);
