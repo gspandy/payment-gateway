@@ -85,6 +85,10 @@ public class PaymentOrderController {
         PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTitle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
         paymentOrder.setCreateBy(paymentOrderModel.getUserId());
         paymentOrder.setOutTradeNo(paymentOrderModel.getOutTradeNo());
+        paymentOrder.setReturnURL(paymentOrderModel.getReturnURL());
+        paymentOrder.setNotifyURL(paymentOrderModel.getNotifyURL());
+        paymentOrder.setCustomer(paymentOrderModel.getCustomer());
+
         PaymentOrder paymentOrderTemp = paymentOrderService.getByOutTradeNo(paymentOrder.getOutTradeNo());
 
         if (paymentOrderTemp != null) {
