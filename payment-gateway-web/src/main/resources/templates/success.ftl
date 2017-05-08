@@ -7,7 +7,7 @@
 </head>
 <body>
 <div>
-   <form id="form" method="post" action="${paymentOrder.returnURL!}">
+   <form id="form" method="post" action="${paymentOrder.returnUrl!}">
         <input name="id" value="${paymentOrder.id!}" type="hidden"/>
         <input name="amount" value="${paymentOrder.amount!}" type="hidden"/>
         <input name="title" value="${paymentOrder.title!}" type="hidden"/>

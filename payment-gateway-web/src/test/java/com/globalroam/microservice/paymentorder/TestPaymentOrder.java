@@ -1,6 +1,6 @@
 package com.globalroam.microservice.paymentorder;
 
-import com.globalroam.microservice.paymentgateway.entity.PaymentOrder;
+import com.joker.microservice.paymentgateway.entity.PaymentOrder;
 import org.junit.Test;
 
 /**
