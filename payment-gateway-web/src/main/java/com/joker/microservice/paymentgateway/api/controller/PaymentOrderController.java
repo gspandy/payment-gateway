@@ -3,15 +3,21 @@ package com.joker.microservice.paymentgateway.api.controller;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
+import com.alipay.api.domain.AlipayTradeAppPayModel;
 import com.alipay.api.domain.AlipayTradeWapPayModel;
+import com.alipay.api.request.AlipayTradeAppPayRequest;
 import com.alipay.api.request.AlipayTradeWapPayRequest;
+import com.alipay.api.response.AlipayTradeAppPayResponse;
 import com.joker.microservice.paymentgateway.cofig.GlobalConfigure;
 import com.joker.microservice.paymentgateway.entity.EntityResponse;
 import com.joker.microservice.paymentgateway.entity.PaymentOrder;
 import com.joker.microservice.paymentgateway.exception.DataNotFoundException;
+import com.joker.microservice.paymentgateway.exception.InternalErrorException;
 import com.joker.microservice.paymentgateway.exception.InvalidRequestException;
 import com.joker.microservice.paymentgateway.exception.ServiceException;
+import com.joker.microservice.paymentgateway.request.AppPaymentOrderModel;
 import com.joker.microservice.paymentgateway.request.PaymentOrderModel;
+import com.joker.microservice.paymentgateway.response.APPPaymentOrder;
 import com.joker.microservice.paymentgateway.service.PaymentOrderService;
 import com.joker.module.common.request.HttpUtil;
 import com.joker.module.payment.alipay.AlipayConfig;
@@ -96,6 +102,62 @@ public class PaymentOrderController {
         }
         PaymentOrder paymentOrderFromDB = paymentOrderService.add(paymentOrder);
         return new EntityResponse<PaymentOrder>(paymentOrderFromDB);
+    }
+
+    @RequestMapping(value = "/app", produces = {"application/json;charset=UTF-8"}, consumes = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
+    @ApiOperation(notes = "此API为APP创建支付单", httpMethod = "POST", value = "创建APP支付单")
+    @ResponseBody
+    public EntityResponse<APPPaymentOrder> createAppOrder(@RequestBody AppPaymentOrderModel paymentOrderModel) throws ServiceException, DataNotFoundException, InvalidRequestException, InternalErrorException {
+        PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTitle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
+        paymentOrder.setCreateBy(paymentOrderModel.getUserId());
+        paymentOrder.setOutTradeNo(paymentOrderModel.getOutTradeNo());
+        paymentOrder.setNotifyUrl(paymentOrderModel.getNotifyUrl());
+        paymentOrder.setReturnUrl(paymentOrderModel.getNotifyUrl());
+        paymentOrder.setCustom(paymentOrderModel.getCustom());
+        paymentOrder.setStatus(PaymentOrder.STATUS_CREATE);
+
+        PaymentOrder paymentOrderTemp = paymentOrderService.getByOutTradeNo(paymentOrder.getOutTradeNo());
+
+        if (paymentOrderTemp != null) {
+            throw new InvalidRequestException("1000011", "该流水单号已经存在");
+        }
+        APPPaymentOrder appPaymentOrder = new APPPaymentOrder();
+
+        //实例化客户端
+        AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, "json", AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY, "RSA2");
+//实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
+        AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
+//SDK已经封装掉了公共参数，这里只需要传入业务参数。以下方法为sdk的model入参方式(model和biz_content同时存在的情况下取biz_content)。
+        AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
+        model.setBody("我是测试数据");
+        model.setSubject("App支付测试Java");
+        model.setOutTradeNo(paymentOrder.getOutTradeNo());
+        model.setTimeoutExpress(AlipayConfig.TIMEOUT_EXPRESS);
+        model.setTotalAmount(paymentOrder.getAmount() + "");
+        model.setProductCode("QUICK_MSECURITY_PAY");
+        request.setBizModel(model);
+        request.setNotifyUrl(paymentOrder.getNotifyUrl());
+        try {
+            PaymentOrder paymentOrderFromDB = null;
+            //这里和普通的接口调用不同，使用的是sdkExecute
+            AlipayTradeAppPayResponse response = alipayClient.sdkExecute(request);
+            paymentOrder.setTradeNo(response.getTradeNo());
+            paymentOrderService.add(paymentOrder);
+            paymentOrderFromDB = paymentOrderService.getById(paymentOrder.getId());
+            System.out.println(response.getBody());//就是orderString 可以直接给客户端请求，无需再做处理。
+            appPaymentOrder.setAmount(paymentOrder.getAmount());
+            appPaymentOrder.setBody(response.getBody());
+            appPaymentOrder.setCustom(paymentOrderFromDB.getCustom());
+            appPaymentOrder.setStatus(paymentOrderFromDB.getStatus());
+            appPaymentOrder.setTitle(paymentOrderFromDB.getTitle());
+            appPaymentOrder.setOutTradeNo(paymentOrderFromDB.getOutTradeNo());
+            appPaymentOrder.setMethod(paymentOrderFromDB.getMethod());
+        } catch (AlipayApiException e) {
+            e.printStackTrace();
+            throw new InternalErrorException("100012", "调用支付宝接口异常");
+        }
+
+        return new EntityResponse<APPPaymentOrder>(appPaymentOrder);
     }
 
 

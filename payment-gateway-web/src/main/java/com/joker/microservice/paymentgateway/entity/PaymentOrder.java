@@ -1,5 +1,7 @@
 package com.joker.microservice.paymentgateway.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.joker.microservice.paymentgateway.common.CommonEntity;
 
 import javax.persistence.Table;
@@ -8,6 +10,7 @@ import javax.persistence.Table;
  * Created by Joker on 2017/4/29.
  */
 @Table(name = "pg_payment_order")
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PaymentOrder extends CommonEntity {
     private double amount;
     private String method;
@@ -16,9 +19,13 @@ public class PaymentOrder extends CommonEntity {
     private String outTradeNo;
     private String tradeNo;
 
+    @JsonIgnore
     private String returnUrl;
+    @JsonIgnore
     private String notifyUrl;
+
     private String custom;
+
 
     public String getCustom() {
         return custom;

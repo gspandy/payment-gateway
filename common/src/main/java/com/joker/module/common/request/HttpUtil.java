@@ -52,6 +52,7 @@ public class HttpUtil {
         StringBuilder webPathBuilder = new StringBuilder();
         webPathBuilder.append(request.getScheme());
         webPathBuilder.append("://");
+        String clientIp = request.getHeader("X-Real-IP");
         webPathBuilder.append(request.getServerName());
 
         if(80 != request.getServerPort()){
