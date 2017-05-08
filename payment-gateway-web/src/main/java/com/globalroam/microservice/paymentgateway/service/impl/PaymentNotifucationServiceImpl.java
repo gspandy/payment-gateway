@@ -25,13 +25,14 @@ public class PaymentNotifucationServiceImpl implements PaymentNotificationServic
         String url = paymentOrder.getNotifyURL();
         HttpUtil.Host host = HttpUtil.parseURL(url);
         HttpRequest request = new HttpRequest(host.getHttpType(), headers, host.getAddress(),Integer.parseInt(host.getPort()));
-        NameValuePair[] nameValuePairs = new NameValuePair[7];
+        NameValuePair[] nameValuePairs = new NameValuePair[8];
         nameValuePairs[0] = new NameValuePair("id",paymentOrder.getId());
         nameValuePairs[1] = new NameValuePair("amount",paymentOrder.getAmount() + "");
         nameValuePairs[2] = new NameValuePair("status",paymentOrder.getStatus());
         nameValuePairs[3] = new NameValuePair("outTradeNo",paymentOrder.getOutTradeNo());
         nameValuePairs[4] = new NameValuePair("tradeNo",paymentOrder.getTradeNo());
         nameValuePairs[5] = new NameValuePair("title",paymentOrder.getTitle());
+        nameValuePairs[5] = new NameValuePair("custom",paymentOrder.getCustom());
         nameValuePairs[6] = new NameValuePair("result","SUCCESS");
         Response<Object> objectResponse = request.post(host.getUri(), nameValuePairs);
         logger.info("notify result : " + objectResponse.getString());

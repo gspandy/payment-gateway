@@ -18,14 +18,14 @@ public class PaymentOrder extends CommonEntity {
 
     private String returnURL;
     private String notifyURL;
-    private String customer;
+    private String custom;
 
-    public String getCustomer() {
-        return customer;
+    public String getCustom() {
+        return custom;
     }
 
-    public void setCustomer(String customer) {
-        this.customer = customer;
+    public void setCustom(String custom) {
+        this.custom = custom;
     }
 
     public PaymentOrder() {

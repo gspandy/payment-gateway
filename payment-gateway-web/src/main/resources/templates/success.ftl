@@ -14,6 +14,7 @@
         <input name="status" value="${paymentOrder.status!}" type="hidden"/>
         <input name="outTradeNo" value="${paymentOrder.outTradeNo!}" type="hidden"/>
         <input name="tradeNo" value="${paymentOrder.tradeNo!}" type="hidden"/>
+        <input name="tradeNo" value="${paymentOrder.custom!}" type="hidden"/>
         <input name="result" value="SUCCESS" type="hidden"/>
    </form>
 </div>
