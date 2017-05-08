@@ -44,9 +44,7 @@
         <profile>
             <id>development</id>
             <!-- 默认激活开发配制，使用config-loca.properties来替换设置过虑的资源文件中的${key}  -->
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+
             <build>
                 <filters>
                     <filter>config-development.properties</filter>
@@ -55,6 +53,9 @@
         </profile>
         <profile>
             <id>product</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <build>
                 <filters>
                     <filter>config-production.properties</filter>
