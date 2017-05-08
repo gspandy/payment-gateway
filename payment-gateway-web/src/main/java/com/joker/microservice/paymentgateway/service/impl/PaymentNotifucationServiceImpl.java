@@ -47,6 +47,14 @@ public class PaymentNotifucationServiceImpl implements PaymentNotificationServic
         params.append(URLEncoder.encode("SUCCESS"));
         Response<Object> objectResponse = request.post(host.getUri(), params.toString());
 
+        if (!objectResponse.isSuccess()) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                notification(paymentOrder);
+                e.printStackTrace();
+            }
+        }
         logger.info("notify result : " + objectResponse.getString());
 
     }

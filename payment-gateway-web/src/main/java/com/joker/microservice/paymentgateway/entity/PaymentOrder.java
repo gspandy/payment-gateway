@@ -129,4 +129,18 @@ public class PaymentOrder extends CommonEntity {
         return METHOD_ALIPAY_H5.equalsIgnoreCase(method) || METHOD_ALIPAY_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_H5.equalsIgnoreCase(method) || METHOD_WECHAT_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_OPEN_H5.equalsIgnoreCase(method);
     }
 
+    @Override
+    public String toString() {
+        return "PaymentOrder{" +
+                "amount=" + amount +
+                ", method='" + method + '\'' +
+                ", title='" + title + '\'' +
+                ", status='" + status + '\'' +
+                ", outTradeNo='" + outTradeNo + '\'' +
+                ", tradeNo='" + tradeNo + '\'' +
+                ", returnUrl='" + returnUrl + '\'' +
+                ", notifyUrl='" + notifyUrl + '\'' +
+                ", custom='" + custom + '\'' +
+                '}';
+    }
 }

@@ -32,9 +32,6 @@ public class PaymentOrderServiceImpl implements PaymentOrderService {
         PaymentOrder paymentOrder = new PaymentOrder();
         paymentOrder.setId(id);
         paymentOrder = paymentOrderMapper.selectByPrimaryKey(paymentOrder);
-        if (paymentOrder == null) {
-            throw new DataNotFoundException("100001", "该支付单不存在");
-        }
         logger.info("======查询支付单结束=======");
         return paymentOrder;
     }
@@ -45,6 +42,14 @@ public class PaymentOrderServiceImpl implements PaymentOrderService {
 
         if (StringUtils.isEmpty(paymentOrder.getTitle())) {
             throw new ServiceException("100004", "支付单标题为空，请填写该参数");
+        }
+
+        if (StringUtils.isEmpty(paymentOrder.getNotifyUrl())) {
+            throw new ServiceException("100007", "notify_url 为空，请填写该参数");
+        }
+
+        if (StringUtils.isEmpty(paymentOrder.getReturnUrl())) {
+            throw new ServiceException("10008", "return_url为空，请填写该参数");
         }
 
         if (paymentOrder.getAmount() <= 0) {

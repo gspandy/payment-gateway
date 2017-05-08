@@ -1,4 +1,4 @@
-package com.globalroam.microservice.paymentorder;
+package com.joker.microservice.paymentorder;
 
 import com.joker.microservice.paymentgateway.entity.PaymentOrder;
 import org.junit.Test;

@@ -86,6 +86,15 @@ public class PaymentReturnController {
             boolean verify_result = AlipaySignature.rsaCheckV1(params, AlipayConfig.ALIPAY_PUBLIC_KEY, AlipayConfig.CHARSET, AlipayConfig.SIGNTYPE);
 
             paymentOrder = paymentOrderService.getByAmountAndOutTradeNo(outTradeNo,amount);
+
+            if (paymentOrder == null) {
+                paymentOrder = new PaymentOrder();
+                modelAndView.addObject("paymentOrder", paymentOrder);
+                modelAndView.addObject("result", "FAILED");
+                modelAndView.addObject("message", "支付单流水号不存在。");
+                modelAndView.setViewName(ERROR_VIEW);
+            }
+
             paymentOrder.setTradeNo(tradeNo);
             if (verify_result) {//验证成功
                 logger.info("sign verid is success.");
@@ -114,20 +123,24 @@ public class PaymentReturnController {
                     return modelAndView;
                 }
 
-                if (paymentOrder == null || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus()) || PaymentOrder.STATUS_COMPLETE.equalsIgnoreCase(paymentOrder.getStatus())) {
+      /*          if (paymentOrder == null || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus()) || PaymentOrder.STATUS_COMPLETE.equalsIgnoreCase(paymentOrder.getStatus())) {
                     logger.info("payment order is not exist or already use..");
+                    modelAndView.addObject("paymentOrder", paymentOrder);
                     modelAndView.addObject("result", "FAILED");
                     modelAndView.addObject("message", "支付单找不着或者已经使用。");
                     modelAndView.setViewName(ERROR_VIEW);
                     return modelAndView;
-                }
+                }*/
 
                 paymentOrder.setStatus(PaymentOrder.STATUS_SUCCESS);
                 paymentOrderService.update(paymentOrder);
                 modelAndView.addObject("paymentOrder", paymentOrder);
                 modelAndView.setViewName(SUCCESS_VIEW);
-                logger.info("payment order is updated, payment successfully..");
+                logger.info("payment order is updated, payment successfully.." );
             }else {
+                modelAndView.addObject("paymentOrder", paymentOrder);
+                modelAndView.addObject("result", "FAILED");
+                modelAndView.addObject("message", "支付宝签名认证失败。");
                 modelAndView.setViewName(ERROR_VIEW);
             }
 
@@ -139,7 +152,9 @@ public class PaymentReturnController {
             modelAndView.addObject("message", "系统错误");
             modelAndView.setViewName(ERROR_VIEW);
         }
-        logger.info("================= aplipay return notify start =================");
+        logger.debug("================= paymenr order value =================");
+        logger.debug(paymentOrder.toString());
+        logger.info("================= aplipay return notify end =================");
         return modelAndView;
     }
 
@@ -150,6 +165,8 @@ public class PaymentReturnController {
 
        PaymentOrder paymentOrder = paymentOrderService.getById(id);
         if (paymentOrder == null) {
+            paymentOrder = new PaymentOrder();
+            modelAndView.addObject("paymentOrder", paymentOrder);
             modelAndView.addObject("result", "FAILED");
             modelAndView.addObject("message", "支付单找不着");
             modelAndView.setViewName(ERROR_VIEW);
@@ -167,12 +184,14 @@ public class PaymentReturnController {
                 return modelAndView;
             }
 
+            modelAndView.addObject("paymentOrder", paymentOrder);
             modelAndView.addObject("result", "FAILED");
             modelAndView.addObject("message", "支付单不是真的支付成功");
             paymentOrder.setStatus(PaymentOrder.STATUS_FAIL);
             paymentOrderService.update(paymentOrder);
 
         } catch (WechatServiceException e) {
+            modelAndView.addObject("paymentOrder", paymentOrder);
             modelAndView.addObject("result", "FAILED");
             modelAndView.addObject("message", "系统错误。");
             modelAndView.setViewName(ERROR_VIEW);

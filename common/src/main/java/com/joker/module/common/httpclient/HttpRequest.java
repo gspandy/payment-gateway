@@ -153,7 +153,7 @@ public class HttpRequest {
 
         logger.info("发起 POST 请求 开始");
         PostMethod postMethod = new PostMethod(uri);
-        postMethod.addParameters(nameValuePairs);
+        postMethod.setRequestBody(nameValuePairs);
         execute(postMethod);
         logger.info("发起 POST 请求 结束");
 

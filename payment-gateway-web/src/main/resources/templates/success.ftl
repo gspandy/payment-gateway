@@ -7,20 +7,25 @@
 </head>
 <body>
 <div>
-   <form id="form" method="post" action="${paymentOrder.returnUrl!}">
+[#if paymentOrder??]
+    <form id="form" method="post" action="${paymentOrder.returnUrl!}">
         <input name="id" value="${paymentOrder.id!}" type="hidden"/>
         <input name="amount" value="${paymentOrder.amount!}" type="hidden"/>
         <input name="title" value="${paymentOrder.title!}" type="hidden"/>
         <input name="status" value="${paymentOrder.status!}" type="hidden"/>
         <input name="outTradeNo" value="${paymentOrder.outTradeNo!}" type="hidden"/>
         <input name="tradeNo" value="${paymentOrder.tradeNo!}" type="hidden"/>
-        <input name="tradeNo" value="${paymentOrder.custom!}" type="hidden"/>
+        <input name="custom" value='${paymentOrder.custom!}' type="hidden"/>
         <input name="result" value="SUCCESS" type="hidden"/>
-   </form>
+    </form>
+    <script>
+        var form = document.getElementById("form");
+        form.submit();
+    </script>
+[#else]
+${message!}
+[/#if]
 </div>
-<script>
-    var form=document.getElementById("form");
-    form.submit();
-</script>
+
 </body>
 </html>

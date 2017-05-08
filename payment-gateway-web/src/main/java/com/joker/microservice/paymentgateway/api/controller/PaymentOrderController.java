@@ -106,6 +106,13 @@ public class PaymentOrderController {
         try {
             PaymentOrder paymentOrder = paymentOrderService.getById(id);
 
+            if (paymentOrder == null) {
+                modelAndView.setViewName("error");
+                modelAndView.addObject("result", "FAILED");
+                modelAndView.addObject("message", "该支付单不存在");
+                return modelAndView;
+            }
+
             if (PaymentOrder.STATUS_COMPLETE.equals(paymentOrder.getStatus()) || PaymentOrder.STATUS_SUCCESS.equalsIgnoreCase(paymentOrder.getStatus())) {
                 //TODO 这里异常状态应该有UI提示
                 modelAndView.setViewName("error");

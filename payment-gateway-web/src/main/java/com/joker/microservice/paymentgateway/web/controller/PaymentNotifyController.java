@@ -91,7 +91,9 @@ public class PaymentNotifyController {
                     //请务必判断请求时的total_fee、seller_id与通知时获取的total_fee、seller_id为一致的
                     //如果有做过处理，不执行商户的业务程序
                     PaymentOrder paymentOrder = paymentOrderService.getByOutTradeNo(outTradeNo);
-
+                    paymentOrder.setTradeNo(tradeNo);
+                    paymentOrder.setStatus(PaymentOrder.STATUS_SUCCESS);
+                    paymentOrderService.update(paymentOrder);
                     paymentNotificationService.notification(paymentOrder);
 
                     //注意：
