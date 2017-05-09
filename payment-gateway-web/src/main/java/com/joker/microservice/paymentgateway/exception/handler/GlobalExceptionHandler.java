@@ -5,6 +5,7 @@ import com.joker.microservice.paymentgateway.entity.APIResponse;
 import com.joker.microservice.paymentgateway.exception.DataNotFoundException;
 import com.joker.microservice.paymentgateway.exception.InvalidRequestException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
@@ -62,4 +63,10 @@ public class GlobalExceptionHandler extends Throwable {
         return new APIResponse("500", "internal server error : " + e.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public APIResponse handleException(MethodArgumentNotValidException exception) {
+        return new APIResponse("400","请求参数不正确");
+    }
 }

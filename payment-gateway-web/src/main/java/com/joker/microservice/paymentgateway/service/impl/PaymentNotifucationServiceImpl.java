@@ -22,7 +22,7 @@ public class PaymentNotifucationServiceImpl implements PaymentNotificationServic
 
     private static Logger logger = LogManager.getLogger(PaymentNotifucationServiceImpl.class);
     @Override
-    public void notification(PaymentOrder paymentOrder) {
+    public boolean notification(PaymentOrder paymentOrder) {
         Header[] headers = {new Header("Content-Type","application/x-www-form-urlencoded ")};
         String url = paymentOrder.getNotifyUrl();
         HttpUtil.Host host = HttpUtil.parseURL(url);
@@ -47,15 +47,9 @@ public class PaymentNotifucationServiceImpl implements PaymentNotificationServic
         params.append(URLEncoder.encode("SUCCESS"));
         Response<Object> objectResponse = request.post(host.getUri(), params.toString());
 
-        if (!objectResponse.isSuccess()) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                notification(paymentOrder);
-                e.printStackTrace();
-            }
-        }
         logger.info("notify result : " + objectResponse.getString());
+        return objectResponse.isSuccess();
+
 
     }
 

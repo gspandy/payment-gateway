@@ -1,5 +1,6 @@
 package com.joker.microservice.paymentgateway.exception;
 
+import com.joker.microservice.paymentgateway.exception.enums.ErrorInfo;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -13,6 +14,13 @@ public class BaseException extends Exception {
     private HttpStatus httpStatus;
     private String code;
     private String message;
+    private ErrorInfo errorInfo;
+
+    public BaseException(ErrorInfo errorInfo) {
+        this.code = errorInfo.getCode();
+        this.message = errorInfo.getMessage();
+
+    }
 
     public BaseException(String code, String message) {
         this.code = code;

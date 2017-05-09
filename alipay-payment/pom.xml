@@ -52,6 +52,15 @@
             </build>
         </profile>
         <profile>
+            <id>staging</id>
+            <!-- 默认激活开发配制，使用config-loca.properties来替换设置过虑的资源文件中的${key}  -->
+            <build>
+                <filters>
+                    <filter>config-staging.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
             <id>product</id>
             <activation>
                 <activeByDefault>true</activeByDefault>

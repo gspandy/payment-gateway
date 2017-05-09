@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+import threads.NotificationThread;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -94,14 +95,12 @@ public class PaymentNotifyController {
                     paymentOrder.setTradeNo(tradeNo);
                     paymentOrder.setStatus(PaymentOrder.STATUS_SUCCESS);
                     paymentOrderService.update(paymentOrder);
-                    paymentNotificationService.notification(paymentOrder);
-
+                    new NotificationThread(paymentOrder,paymentOrderService).start();
                     //注意：
                     //如果签约的是可退款协议，那么付款完成后，支付宝系统发送该交易状态通知。
                 }
 
                 //——请根据您的业务逻辑来编写程序（以上代码仅作参考）——
-
 
                 out.write("success");	//请不要修改或删除
                 out.flush();

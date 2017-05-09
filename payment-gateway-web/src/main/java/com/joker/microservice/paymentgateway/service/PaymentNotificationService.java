@@ -7,5 +7,5 @@ import com.joker.microservice.paymentgateway.entity.PaymentOrder;
  */
 public interface PaymentNotificationService
 {
-     void notification(PaymentOrder paymentOrder);
+     boolean notification(PaymentOrder paymentOrder);
 }

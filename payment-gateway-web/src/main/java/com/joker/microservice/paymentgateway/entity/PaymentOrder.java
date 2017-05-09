@@ -115,6 +115,8 @@ public class PaymentOrder extends CommonEntity {
 
     //支付方式 -- 支付宝支付H5
     public static final String METHOD_ALIPAY_H5 = "ALIPAY_H5";
+    //支付方式 -- 支付宝支付H5
+    public static final String METHOD_ALIPAY_APP = "ALIPAY_APP";
     //支付方式 -- 支付宝支付二维码
     public static final String METHOD_ALIPAY_QRCODE = "ALIPAY_QRCODE";
     //支付方式 -- 微信H5
@@ -133,7 +135,7 @@ public class PaymentOrder extends CommonEntity {
     }
 
     public static boolean isValidMethod(String method) {
-        return METHOD_ALIPAY_H5.equalsIgnoreCase(method) || METHOD_ALIPAY_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_H5.equalsIgnoreCase(method) || METHOD_WECHAT_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_OPEN_H5.equalsIgnoreCase(method);
+        return METHOD_ALIPAY_H5.equalsIgnoreCase(method) || METHOD_ALIPAY_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_H5.equalsIgnoreCase(method) || METHOD_WECHAT_QRCODE.equalsIgnoreCase(method) || METHOD_WECHAT_OPEN_H5.equalsIgnoreCase(method) || METHOD_ALIPAY_APP.equalsIgnoreCase(method);
     }
 
     @Override

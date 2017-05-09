@@ -11,10 +11,9 @@ import com.alipay.api.response.AlipayTradeAppPayResponse;
 import com.joker.microservice.paymentgateway.cofig.GlobalConfigure;
 import com.joker.microservice.paymentgateway.entity.EntityResponse;
 import com.joker.microservice.paymentgateway.entity.PaymentOrder;
-import com.joker.microservice.paymentgateway.exception.DataNotFoundException;
-import com.joker.microservice.paymentgateway.exception.InternalErrorException;
-import com.joker.microservice.paymentgateway.exception.InvalidRequestException;
-import com.joker.microservice.paymentgateway.exception.ServiceException;
+import com.joker.microservice.paymentgateway.exception.*;
+import com.joker.microservice.paymentgateway.exception.enums.ErrorInfo;
+import com.joker.microservice.paymentgateway.exception.enums.PaymentOrderErrorInfo;
 import com.joker.microservice.paymentgateway.request.AppPaymentOrderModel;
 import com.joker.microservice.paymentgateway.request.PaymentOrderModel;
 import com.joker.microservice.paymentgateway.response.APPPaymentOrder;
@@ -34,12 +33,16 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 
 /**
@@ -98,16 +101,17 @@ public class PaymentOrderController {
         PaymentOrder paymentOrderTemp = paymentOrderService.getByOutTradeNo(paymentOrder.getOutTradeNo());
 
         if (paymentOrderTemp != null) {
-            throw new DataNotFoundException("100006","该支付单商户单号已经存在");
+            throw new DataNotFoundException("100006", "该支付单商户单号已经存在");
         }
         PaymentOrder paymentOrderFromDB = paymentOrderService.add(paymentOrder);
         return new EntityResponse<PaymentOrder>(paymentOrderFromDB);
     }
 
-    @RequestMapping(value = "/app", produces = {"application/json;charset=UTF-8"}, consumes = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
+    @RequestMapping(value = "/apptype", produces = {"application/json;charset=UTF-8"}, consumes = {"application/json;charset=UTF-8"}, method = RequestMethod.POST)
     @ApiOperation(notes = "此API为APP创建支付单", httpMethod = "POST", value = "创建APP支付单")
     @ResponseBody
-    public EntityResponse<APPPaymentOrder> createAppOrder(@RequestBody AppPaymentOrderModel paymentOrderModel) throws ServiceException, DataNotFoundException, InvalidRequestException, InternalErrorException {
+    public EntityResponse<APPPaymentOrder> createAppOrder(@Valid @RequestBody AppPaymentOrderModel paymentOrderModel, HttpServletRequest hsrequest, BindingResult result) throws ServiceException, DataNotFoundException, InvalidRequestException, InternalErrorException {
+
         PaymentOrder paymentOrder = new PaymentOrder(paymentOrderModel.getAmount(), paymentOrderModel.getTitle(), paymentOrderModel.getMethod(), PaymentOrder.STATUS_CREATE);
         paymentOrder.setCreateBy(paymentOrderModel.getUserId());
         paymentOrder.setOutTradeNo(paymentOrderModel.getOutTradeNo());
@@ -123,20 +127,33 @@ public class PaymentOrderController {
         }
         APPPaymentOrder appPaymentOrder = new APPPaymentOrder();
 
+        switch (paymentOrder.getMethod()) {
+            case PaymentOrder.METHOD_ALIPAY_APP:
+                alipayAPP(hsrequest, paymentOrder, appPaymentOrder);
+                break;
+            default:
+                throw new InvalidRequestException("100021", "APP支付方式目前只支持：" + PaymentOrder.METHOD_ALIPAY_APP);
+        }
+
+
+        return new EntityResponse<APPPaymentOrder>(appPaymentOrder);
+    }
+
+    private void alipayAPP(HttpServletRequest hsrequest, PaymentOrder paymentOrder, APPPaymentOrder appPaymentOrder) throws ServiceException, DataNotFoundException, InternalErrorException {
         //实例化客户端
         AlipayClient alipayClient = new DefaultAlipayClient(AlipayConfig.URL, AlipayConfig.APPID, AlipayConfig.RSA_PRIVATE_KEY, "json", AlipayConfig.CHARSET, AlipayConfig.ALIPAY_PUBLIC_KEY, "RSA2");
 //实例化具体API对应的request类,类名称和接口名称对应,当前调用接口名称：alipay.trade.app.pay
         AlipayTradeAppPayRequest request = new AlipayTradeAppPayRequest();
 //SDK已经封装掉了公共参数，这里只需要传入业务参数。以下方法为sdk的model入参方式(model和biz_content同时存在的情况下取biz_content)。
         AlipayTradeAppPayModel model = new AlipayTradeAppPayModel();
-        model.setBody("我是测试数据");
-        model.setSubject("App支付测试Java");
+        model.setBody(paymentOrder.getTitle());
+        model.setSubject(paymentOrder.getTitle());
         model.setOutTradeNo(paymentOrder.getOutTradeNo());
         model.setTimeoutExpress(AlipayConfig.TIMEOUT_EXPRESS);
         model.setTotalAmount(paymentOrder.getAmount() + "");
         model.setProductCode("QUICK_MSECURITY_PAY");
         request.setBizModel(model);
-        request.setNotifyUrl(paymentOrder.getNotifyUrl());
+        request.setNotifyUrl(HttpUtil.serviceBasePath(hsrequest) + AlipayConfig.NOTIFY_URL);
         try {
             PaymentOrder paymentOrderFromDB = null;
             //这里和普通的接口调用不同，使用的是sdkExecute
@@ -152,12 +169,11 @@ public class PaymentOrderController {
             appPaymentOrder.setTitle(paymentOrderFromDB.getTitle());
             appPaymentOrder.setOutTradeNo(paymentOrderFromDB.getOutTradeNo());
             appPaymentOrder.setMethod(paymentOrderFromDB.getMethod());
+            appPaymentOrder.setUserId(paymentOrderFromDB.getCreateBy());
         } catch (AlipayApiException e) {
             e.printStackTrace();
             throw new InternalErrorException("100012", "调用支付宝接口异常");
         }
-
-        return new EntityResponse<APPPaymentOrder>(appPaymentOrder);
     }
 
 
@@ -247,7 +263,7 @@ public class PaymentOrderController {
         logger.debug("h5 json 为 :" + h5PayJson);
 
         request.setAttribute("h5PayJson", h5PayJson);
-        request.setAttribute("returnURL",HttpUtil.serviceBasePath(request) + WechatPaymentConfig.RETURN_URI);
+        request.setAttribute("returnURL", HttpUtil.serviceBasePath(request) + WechatPaymentConfig.RETURN_URI);
 
         return "wechat-open-h5";
     }

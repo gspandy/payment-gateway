@@ -17,6 +17,16 @@ public class APPPaymentOrder {
     private String tradeNo;
     private String body;
     private String custom;
+    private String userId;
+
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public double getAmount() {
         return amount;
